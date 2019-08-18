@@ -10,6 +10,10 @@ export default {
     APP_CLIENT_ID: "${aws_cognito_user_pool_client.pool_client.id}",
     IDENTITY_POOL_ID: "${aws_cognito_identity_pool.identity_pool.id}",
   },
+  apiGateway: {
+    REGION: "us-east-1",
+    URL: "${aws_api_gateway_deployment.api_deployment.invoke_url}",
+  },
 };
   CONTENT
 }
