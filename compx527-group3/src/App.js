@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+import createBrowserHistory from 'history/createBrowserHistory';
 import { Auth } from 'aws-amplify';
 
 import { FaChartLine } from 'react-icons/fa';
@@ -59,6 +60,8 @@ class App extends Component {
     this.setState({ isAuthenticating: false });
   }
 
+  history = createBrowserHistory();
+
   userHasAuthenticated = (authenticated) => { this.setState({ isAuthenticated: authenticated }); }
 
   handleLogout = async (event) => {
@@ -74,7 +77,7 @@ class App extends Component {
     };
 
     return (
-      <Router>
+      <Router history={this.history}>
         <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
           <Container>
             <Navbar.Brand href="/"><FaChartLine /> Stock Data Viewer</Navbar.Brand>
@@ -82,7 +85,12 @@ class App extends Component {
             <Navbar.Collapse id="responsive-navbar-nav">
               <Nav className="mr-auto">
                 {isAuthenticated && (
-                  <Nav.Link href="/subscriptions">Subscriptions</Nav.Link>
+                  <Nav.Link
+                    href="/subscriptions"
+                    active={this.history.location.pathname === "/subscriptions"}
+                  >
+                    Subscriptions
+                  </Nav.Link>
                 )}
               </Nav>
               <Nav>
