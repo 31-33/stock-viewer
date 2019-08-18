@@ -1,21 +1,40 @@
 import React, { Component } from 'react';
+import { API } from 'aws-amplify';
 import StockViewComponent from './StockViewComponent';
+
 import CardColumns from 'react-bootstrap/CardColumns';
+import Spinner from 'react-bootstrap/Spinner';
 
 class StockViewPage extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      loading: true,
+      subscriptions: [],
+    };
+  }
+
+  componentDidMount() {
+    API.get(
+      'awsApiGateway',
+      '/subscriptions',
+      {},
+    ).then((subscriptions) => {
+      this.setState({
+        loading: false,
+        subscriptions
+      });
+    });
+  }
+
   render() {
+    const { loading, subscriptions } = this.state;
     return (
       <CardColumns>
-        <StockViewComponent stockId={0} />
-        <StockViewComponent stockId={1} />
-        <StockViewComponent stockId={2} />
-        <StockViewComponent stockId={3} />
-        <StockViewComponent stockId={4} />
-        <StockViewComponent stockId={5} />
-        <StockViewComponent stockId={6} />
-        <StockViewComponent stockId={7} />
-        <StockViewComponent stockId={8} />
-        <StockViewComponent stockId={9} />
+        {loading
+          ? <Spinner animation='border' />
+          : subscriptions.map(stockId => <StockViewComponent stockId={stockId} />)}
       </CardColumns>
     );
   }
