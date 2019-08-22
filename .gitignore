@@ -1,7 +1,11 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+/lambdas/*
+!/lambdas/src/*
+
 # dependencies
 .terraform
 
 terraform.tfstate
 terraform.tfstate.backup
+compx527-group3/src/config.js
