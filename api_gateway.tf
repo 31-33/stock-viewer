@@ -51,7 +51,7 @@ resource "aws_api_gateway_integration" "stocklist_integration" {
   http_method = "${aws_api_gateway_method.stocklist_method.http_method}"
   type = "AWS_PROXY"
   uri = "${aws_lambda_function.stocklist_lambda.invoke_arn}"
-  integration_http_method = "GET"
+  integration_http_method = "POST"
 }
 
 resource "aws_api_gateway_method_response" "stocklist_method_response" {
@@ -94,7 +94,7 @@ resource "aws_api_gateway_integration" "stockdata_integration" {
   http_method = "${aws_api_gateway_method.stockdata_method.http_method}"
   type = "AWS_PROXY"
   uri = "${aws_lambda_function.stockdata_lambda.invoke_arn}"
-  integration_http_method = "GET"
+  integration_http_method = "POST"
 }
 
 resource "aws_api_gateway_method_response" "stockdata_method_response" {
@@ -137,7 +137,7 @@ resource "aws_api_gateway_integration" "subscriptions_integration" {
   http_method = "${aws_api_gateway_method.subscriptions_method.http_method}"
   type = "AWS_PROXY"
   uri = "${aws_lambda_function.subscriptions_lambda.invoke_arn}"
-  integration_http_method = "GET"
+  integration_http_method = "POST"
 }
 
 resource "aws_api_gateway_method_response" "subscriptions_method_response" {
