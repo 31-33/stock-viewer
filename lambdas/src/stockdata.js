@@ -2,7 +2,11 @@ exports.handler = function(event, context, callback) {
   
   return {
     statusCode: 200,
-    body: {
+    headers: JSON.stringify({
+      "Access-Control-Allow-Origin": "*",
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify({
       name: 'Aardvark Trading LLC',
       datapoints: [
         {
@@ -46,6 +50,6 @@ exports.handler = function(event, context, callback) {
           price: 101.4,
         },
       ],
-    },
-  }
+    }),
+  };
 }
