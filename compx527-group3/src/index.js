@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-import Amplify from 'aws-amplify';
+import Amplify, { Auth } from 'aws-amplify';
 import config from './config';
 
 Amplify.configure({
@@ -18,7 +18,12 @@ Amplify.configure({
       {
         name: "awsApiGateway",
         endpoint: config.apiGateway.URL,
-        region: config.apiGateway.REGION
+        region: config.apiGateway.REGION,
+        custom_header: async () => { 
+          return {
+            Authorization: `Bearer ${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
+          }
+        }
       },
     ]
   },
