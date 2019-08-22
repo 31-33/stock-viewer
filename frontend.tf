@@ -12,7 +12,7 @@ export default {
   },
   apiGateway: {
     REGION: "us-east-1",
-    URL: "${aws_api_gateway_deployment.api_deployment.invoke_url}",
+    URL: "${aws_api_gateway_deployment.deployment.invoke_url}",
   },
 };
   CONTENT
