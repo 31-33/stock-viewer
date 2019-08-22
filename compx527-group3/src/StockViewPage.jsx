@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { API } from 'aws-amplify';
+import { API, Auth } from 'aws-amplify';
 import StockViewComponent from './StockViewComponent';
 
 import CardColumns from 'react-bootstrap/CardColumns';
@@ -15,11 +15,16 @@ class StockViewPage extends Component {
     };
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     API.get(
       'awsApiGateway',
       '/subscriptions',
-      {},
+      {
+        headers: {
+          Authorization: await Auth.currentSession()
+            .then(session => session.getIdToken().getJwtToken())
+        }
+      },
     ).then((subscriptions) => {
       this.setState({
         loading: false,

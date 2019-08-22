@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { API } from 'aws-amplify';
+import { API, Auth } from 'aws-amplify';
 
 import ListGroup from 'react-bootstrap/ListGroup';
 import FormCheck from 'react-bootstrap/FormCheck';
@@ -20,7 +20,12 @@ class SubscriptionsPage extends Component {
     API.get(
       'awsApiGateway',
       '/stocklist',
-      {},
+      {
+        headers: {
+          Authorization: await Auth.currentSession()
+            .then(session => session.getIdToken().getJwtToken())
+        }
+      },
     ).then((stocklist) => {
       this.setState({
         stocklist,
@@ -31,7 +36,12 @@ class SubscriptionsPage extends Component {
     API.get(
       'awsApiGateway',
       '/subscriptions',
-      {},
+      {
+        headers: {
+          Authorization: await Auth.currentSession()
+            .then(session => session.getIdToken().getJwtToken())
+        }
+      },
     ).then((response) => {
       this.setState({ subscriptions: new Set(response) });
     });
@@ -42,6 +52,10 @@ class SubscriptionsPage extends Component {
       'awsApiGateway',
       '/subscribe',
       {
+        headers: {
+          Authorization: await Auth.currentSession()
+            .then(session => session.getIdToken().getJwtToken())
+        },
         queryStringParameters: {
           stockId,
           subscribe,
