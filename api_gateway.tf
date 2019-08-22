@@ -1,14 +1,24 @@
 resource "aws_api_gateway_rest_api" "rest_api" {
-  name = "stock_viewer_api"
-  description = "REST API to provide functionality for the COMPX527 group project, 'Stock Data Viewer'"
+    name        =  "rest-api"
+    description =  "terraform api with lambda" 
 }
 
 resource "aws_api_gateway_deployment" "deployment" {
+  depends_on = [
+    "aws_api_gateway_method.stocklist_method",
+    "aws_api_gateway_integration.stocklist_integration",
+    "aws_api_gateway_method.stockdata_method",
+    "aws_api_gateway_integration.stockdata_integration",
+    "aws_api_gateway_method.subscriptions_method",
+    "aws_api_gateway_integration.subscriptions_integration",
+    "aws_api_gateway_method.subscribe_method",
+    "aws_api_gateway_integration.subscribe_integration",
+  ]
   rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
   stage_name = "application"
-  depends_on = [
-    "aws_api_gateway_integration.stocklist_integration"
-  ]
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_api_gateway_authorizer" "api_auth" {
@@ -18,92 +28,174 @@ resource "aws_api_gateway_authorizer" "api_auth" {
   provider_arns = ["${aws_cognito_user_pool.user_pool.arn}"]
 }
 
+
 # stocklist
-resource "aws_api_gateway_resource" "options_resource" {
-  path_part = "stocklist"
+resource "aws_api_gateway_resource" "stocklist_resource" {
+  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
   parent_id = "${aws_api_gateway_rest_api.rest_api.root_resource_id}"
-  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
-}
-
-resource "aws_api_gateway_method" "options_method" {
-  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
-  resource_id = "${aws_api_gateway_resource.options_resource.id}"
-  http_method = "OPTIONS"
-  # authorization = "NONE"
-  authorization = "COGNITO_USER_POOLS"
-  authorizer_id = "${aws_api_gateway_authorizer.api_auth.id}"
-}
-
-resource "aws_api_gateway_method_response" "options_response" {
-  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
-  resource_id = "${aws_api_gateway_resource.options_resource.id}"
-  http_method = "${aws_api_gateway_method.options_method.http_method}"
-  status_code = "200"
-  response_models = {
-    "application/json" = "Empty"
-  }
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true,
-    "method.response.header.Access-Control-Allow-Methods" = true,
-    "method.response.header.Access-Control-Allow-Origin" = true
-  }
-  depends_on = ["aws_api_gateway_method.options_method"]
-}
-
-resource "aws_api_gateway_integration" "options_integration" {
-  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
-  resource_id = "${aws_api_gateway_resource.options_resource.id}"
-  http_method = "${aws_api_gateway_method.options_method.http_method}"
-  type = "MOCK"
-  depends_on = ["aws_api_gateway_method.options_method"]
-}
-
-resource "aws_api_gateway_integration_response" "options_integration_response" {
-  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
-  resource_id = "${aws_api_gateway_resource.options_resource.id}"
-  http_method = "${aws_api_gateway_method.options_method.http_method}"
-  status_code = "${aws_api_gateway_method_response.options_response.status_code}"
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type, X-Amz-Date, Authorization, X-Api-Key, X-Amz-Security-Token'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'",
-    "method.response.header.Access-Control-Allow-Origin" = "'*'"
-  }
-  depends_on = [
-    "aws_api_gateway_method_response.options_response",
-    "aws_s3_bucket.react_bucket"
-  ]
+  path_part = "stocklist"
 }
 
 resource "aws_api_gateway_method" "stocklist_method" {
   rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
-  resource_id = "${aws_api_gateway_resource.options_resource.id}"
+  resource_id = "${aws_api_gateway_resource.stocklist_resource.id}"
   http_method = "GET"
   # authorization = "NONE"
   authorization = "COGNITO_USER_POOLS"
   authorizer_id = "${aws_api_gateway_authorizer.api_auth.id}"
 }
 
-resource "aws_api_gateway_method_response" "stocklist_response" {
+resource "aws_api_gateway_integration" "stocklist_integration" {
   rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
-  resource_id = "${aws_api_gateway_resource.options_resource.id}"
+  resource_id = "${aws_api_gateway_resource.stocklist_resource.id}"
+  http_method = "${aws_api_gateway_method.stocklist_method.http_method}"
+  type = "AWS_PROXY"
+  uri = "${aws_lambda_function.stocklist_lambda.invoke_arn}"
+  integration_http_method = "GET"
+}
+
+resource "aws_api_gateway_method_response" "stocklist_method_response" {
+  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  resource_id = "${aws_api_gateway_resource.stocklist_resource.id}"
   http_method = "${aws_api_gateway_method.stocklist_method.http_method}"
   status_code = "200"
   response_parameters = {
     "method.response.header.Access-Control-Allow-Origin" = true
   }
-  depends_on = ["aws_api_gateway_method.stocklist_method"]
 }
 
-resource "aws_api_gateway_integration" "stocklist_integration" {
+module "api-gateway-enable-cors-stocklist" {
+  source  = "squidfunk/api-gateway-enable-cors/aws"
+  version = "0.3.0"
+  api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  api_resource_id = "${aws_api_gateway_resource.stocklist_resource.id}"
+}
+
+
+# stockdata
+resource "aws_api_gateway_resource" "stockdata_resource" {
   rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
-  resource_id = "${aws_api_gateway_resource.options_resource.id}"
-  http_method = "${aws_api_gateway_method.stocklist_method.http_method}"
-  integration_http_method = "GET"
-  type = "AWS_PROXY"
-  uri = "${aws_lambda_function.stocklist_lambda.invoke_arn}"
-  depends_on = [
-    "aws_api_gateway_method.stocklist_method",
-    "aws_lambda_function.stocklist_lambda"
-  ]
+  parent_id = "${aws_api_gateway_rest_api.rest_api.root_resource_id}"
+  path_part = "stockdata"
 }
 
+resource "aws_api_gateway_method" "stockdata_method" {
+  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  resource_id = "${aws_api_gateway_resource.stockdata_resource.id}"
+  http_method = "GET"
+  # authorization = "NONE"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.api_auth.id}"
+}
+
+resource "aws_api_gateway_integration" "stockdata_integration" {
+  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  resource_id = "${aws_api_gateway_resource.stockdata_resource.id}"
+  http_method = "${aws_api_gateway_method.stockdata_method.http_method}"
+  type = "AWS_PROXY"
+  uri = "${aws_lambda_function.stockdata_lambda.invoke_arn}"
+  integration_http_method = "GET"
+}
+
+resource "aws_api_gateway_method_response" "stockdata_method_response" {
+  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  resource_id = "${aws_api_gateway_resource.stockdata_resource.id}"
+  http_method = "${aws_api_gateway_method.stockdata_method.http_method}"
+  status_code = "200"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+module "api-gateway-enable-cors-stockdata" {
+  source  = "squidfunk/api-gateway-enable-cors/aws"
+  version = "0.3.0"
+  api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  api_resource_id = "${aws_api_gateway_resource.stockdata_resource.id}"
+}
+
+
+# subscriptions
+resource "aws_api_gateway_resource" "subscriptions_resource" {
+  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  parent_id = "${aws_api_gateway_rest_api.rest_api.root_resource_id}"
+  path_part = "subscriptions"
+}
+
+resource "aws_api_gateway_method" "subscriptions_method" {
+  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  resource_id = "${aws_api_gateway_resource.subscriptions_resource.id}"
+  http_method = "GET"
+  # authorization = "NONE"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.api_auth.id}"
+}
+
+resource "aws_api_gateway_integration" "subscriptions_integration" {
+  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  resource_id = "${aws_api_gateway_resource.subscriptions_resource.id}"
+  http_method = "${aws_api_gateway_method.subscriptions_method.http_method}"
+  type = "AWS_PROXY"
+  uri = "${aws_lambda_function.subscriptions_lambda.invoke_arn}"
+  integration_http_method = "GET"
+}
+
+resource "aws_api_gateway_method_response" "subscriptions_method_response" {
+  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  resource_id = "${aws_api_gateway_resource.subscriptions_resource.id}"
+  http_method = "${aws_api_gateway_method.subscriptions_method.http_method}"
+  status_code = "200"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+module "api-gateway-enable-cors-subscriptions" {
+  source  = "squidfunk/api-gateway-enable-cors/aws"
+  version = "0.3.0"
+  api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  api_resource_id = "${aws_api_gateway_resource.subscriptions_resource.id}"
+}
+
+
+# subscribe
+resource "aws_api_gateway_resource" "subscribe_resource" {
+  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  parent_id = "${aws_api_gateway_rest_api.rest_api.root_resource_id}"
+  path_part = "subscribe"
+}
+
+resource "aws_api_gateway_method" "subscribe_method" {
+  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  resource_id = "${aws_api_gateway_resource.subscribe_resource.id}"
+  http_method = "POST"
+  # authorization = "NONE"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = "${aws_api_gateway_authorizer.api_auth.id}"
+}
+
+resource "aws_api_gateway_integration" "subscribe_integration" {
+  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  resource_id = "${aws_api_gateway_resource.subscribe_resource.id}"
+  http_method = "${aws_api_gateway_method.subscribe_method.http_method}"
+  type = "AWS_PROXY"
+  uri = "${aws_lambda_function.subscribe_lambda.invoke_arn}"
+  integration_http_method = "POST"
+}
+
+resource "aws_api_gateway_method_response" "subscribe_method_response" {
+  rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  resource_id = "${aws_api_gateway_resource.subscribe_resource.id}"
+  http_method = "${aws_api_gateway_method.subscribe_method.http_method}"
+  status_code = "200"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+module "api-gateway-enable-cors-subscribe" {
+  source  = "squidfunk/api-gateway-enable-cors/aws"
+  version = "0.3.0"
+  api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+  api_resource_id = "${aws_api_gateway_resource.subscribe_resource.id}"
+}
