@@ -20,7 +20,7 @@ class StockViewPage extends Component {
       'awsApiGateway',
       '/subscriptions',
       {},
-    ).then((subscriptions) => {
+    ).then(({ subscriptions }) => {
       this.setState({
         loading: false,
         subscriptions
@@ -34,7 +34,7 @@ class StockViewPage extends Component {
       <CardColumns>
         {loading
           ? <Spinner animation='border' />
-          : subscriptions.map(stockId => <StockViewComponent stockId={stockId} />)}
+          : subscriptions.map(stockId => <StockViewComponent stockId={stockId} key={stockId} />)}
       </CardColumns>
     );
   }

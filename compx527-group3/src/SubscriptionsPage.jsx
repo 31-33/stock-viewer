@@ -21,8 +21,7 @@ class SubscriptionsPage extends Component {
       'awsApiGateway',
       '/stocklist',
       {},
-    ).then((stocklist) => {
-      console.log(stocklist);
+    ).then(({ stocklist }) => {
       this.setState({
         stocklist,
         loading: false,
@@ -33,8 +32,8 @@ class SubscriptionsPage extends Component {
       'awsApiGateway',
       '/subscriptions',
       {},
-    ).then((response) => {
-      this.setState({ subscriptions: new Set(response) });
+    ).then(({ subscriptions }) => {
+      this.setState({ subscriptions: new Set(subscriptions) });
     });
   }
 
@@ -48,10 +47,9 @@ class SubscriptionsPage extends Component {
           subscribe,
         }
       }
-    ).then((subscribed) => {
-      console.log(subscribed);
+    ).then(({ res }) => {
       const updatedSubscriptions = this.state.subscriptions;
-      if (subscribed) {
+      if (res) {
         updatedSubscriptions.add(stockId);
       } else {
         updatedSubscriptions.delete(stockId);
@@ -64,7 +62,7 @@ class SubscriptionsPage extends Component {
     const { subscriptions } = this.state;
 
     return (
-      <ListGroup.Item>
+      <ListGroup.Item key={item.stockId}>
         <FormCheck
           type="checkbox"
           label={item.name}

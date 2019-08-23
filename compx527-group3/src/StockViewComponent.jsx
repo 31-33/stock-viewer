@@ -17,6 +17,7 @@ class StockViewComponent extends Component {
     this.state = {
       loading: true,
       data: null,
+      name: false,
       dateRange: 'q', // [w, m, q, y]
     };
   }
@@ -39,20 +40,21 @@ class StockViewComponent extends Component {
           dateRange,
         }
       }
-    ).then((data) => {
+    ).then(({ name, datapoints }) => {
       this.setState({
         loading: true,
-        data,
+        name,
+        data: datapoints,
       });
     });
   }
 
   render() {
-    const { loading, data, dateRange } = this.state;
+    const { loading, data, name, dateRange } = this.state;
 
     return (
       <Card>
-        <Card.Header>{data && data.name}</Card.Header>
+        <Card.Header>{name}</Card.Header>
         <Card.Body style={{ width: '100%', height: '300px' }}>
           {loading
             ? <Spinner animation='border' />
