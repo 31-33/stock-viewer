@@ -40,7 +40,6 @@ resource "aws_api_gateway_method" "stocklist_method" {
   rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
   resource_id = "${aws_api_gateway_resource.stocklist_resource.id}"
   http_method = "GET"
-  # authorization = "NONE"
   authorization = "COGNITO_USER_POOLS"
   authorizer_id = "${aws_api_gateway_authorizer.api_auth.id}"
 }
@@ -62,6 +61,20 @@ resource "aws_api_gateway_method_response" "stocklist_method_response" {
   response_parameters = {
     "method.response.header.Access-Control-Allow-Origin" = true
   }
+  response_models = {
+    "application/json" = "Empty"
+  }
+}
+
+resource "aws_api_gateway_integration_response" "stocklist_integration_response" {
+   rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+   resource_id = "${aws_api_gateway_resource.stocklist_resource.id}"
+   http_method = "${aws_api_gateway_method.stocklist_method.http_method}"
+   status_code = "${aws_api_gateway_method_response.stocklist_method_response.status_code}"
+   depends_on = ["aws_api_gateway_integration.stocklist_integration"]
+   response_templates = {
+       "application/json" = ""
+   } 
 }
 
 module "api-gateway-enable-cors-stocklist" {
@@ -83,7 +96,6 @@ resource "aws_api_gateway_method" "stockdata_method" {
   rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
   resource_id = "${aws_api_gateway_resource.stockdata_resource.id}"
   http_method = "GET"
-  # authorization = "NONE"
   authorization = "COGNITO_USER_POOLS"
   authorizer_id = "${aws_api_gateway_authorizer.api_auth.id}"
 }
@@ -105,6 +117,20 @@ resource "aws_api_gateway_method_response" "stockdata_method_response" {
   response_parameters = {
     "method.response.header.Access-Control-Allow-Origin" = true
   }
+  response_models = {
+    "application/json" = "Empty"
+  }
+}
+
+resource "aws_api_gateway_integration_response" "stockdata_integration_response" {
+   rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+   resource_id = "${aws_api_gateway_resource.stockdata_resource.id}"
+   http_method = "${aws_api_gateway_method.stockdata_method.http_method}"
+   status_code = "${aws_api_gateway_method_response.stockdata_method_response.status_code}"
+   depends_on = ["aws_api_gateway_integration.stockdata_integration"]
+   response_templates = {
+       "application/json" = ""
+   } 
 }
 
 module "api-gateway-enable-cors-stockdata" {
@@ -126,7 +152,6 @@ resource "aws_api_gateway_method" "subscriptions_method" {
   rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
   resource_id = "${aws_api_gateway_resource.subscriptions_resource.id}"
   http_method = "GET"
-  # authorization = "NONE"
   authorization = "COGNITO_USER_POOLS"
   authorizer_id = "${aws_api_gateway_authorizer.api_auth.id}"
 }
@@ -148,6 +173,20 @@ resource "aws_api_gateway_method_response" "subscriptions_method_response" {
   response_parameters = {
     "method.response.header.Access-Control-Allow-Origin" = true
   }
+  response_models = {
+    "application/json" = "Empty"
+  }
+}
+
+resource "aws_api_gateway_integration_response" "subscriptions_integration_response" {
+   rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+   resource_id = "${aws_api_gateway_resource.subscriptions_resource.id}"
+   http_method = "${aws_api_gateway_method.subscriptions_method.http_method}"
+   status_code = "${aws_api_gateway_method_response.subscriptions_method_response.status_code}"
+   depends_on = ["aws_api_gateway_integration.subscriptions_integration"]
+   response_templates = {
+       "application/json" = ""
+   } 
 }
 
 module "api-gateway-enable-cors-subscriptions" {
@@ -169,7 +208,6 @@ resource "aws_api_gateway_method" "subscribe_method" {
   rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
   resource_id = "${aws_api_gateway_resource.subscribe_resource.id}"
   http_method = "POST"
-  # authorization = "NONE"
   authorization = "COGNITO_USER_POOLS"
   authorizer_id = "${aws_api_gateway_authorizer.api_auth.id}"
 }
@@ -191,6 +229,20 @@ resource "aws_api_gateway_method_response" "subscribe_method_response" {
   response_parameters = {
     "method.response.header.Access-Control-Allow-Origin" = true
   }
+  response_models = {
+    "application/json" = "Empty"
+  }
+}
+
+resource "aws_api_gateway_integration_response" "subscribe_integration_response" {
+   rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
+   resource_id = "${aws_api_gateway_resource.subscribe_resource.id}"
+   http_method = "${aws_api_gateway_method.subscribe_method.http_method}"
+   status_code = "${aws_api_gateway_method_response.subscribe_method_response.status_code}"
+   depends_on = ["aws_api_gateway_integration.subscribe_integration"]
+   response_templates = {
+       "application/json" = ""
+   } 
 }
 
 module "api-gateway-enable-cors-subscribe" {
