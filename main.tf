@@ -9,11 +9,11 @@ provider "archive" {
 }
 
 variable "website_bucket" {
-  default = "compx527-group3-stock-data-viewer"
+  default = "compx527-group3-stock-data-viewer-alex"#"compx527-group3-stock-data-viewer"
 }
 
 variable "lambda_bucket" {
-  default = "compx526-group3-lambdas"
+  default = "compx526-group3-lambdas-alex"#"compx526-group3-lambdas"
 }
 
 variable "lambdas_version" {
