@@ -46,12 +46,50 @@ resource "aws_iam_role" "lambda_role" {
     "Version": "2012-10-17",
     "Statement": [
         {
-        "Action": "sts:AssumeRole",
-        "Principal": {
-            "Service": "lambda.amazonaws.com"
+            "Action": "sts:AssumeRole",
+            "Principal": {
+                "Service": "lambda.amazonaws.com"
+            },
+            "Effect": "Allow",
+            "Sid": ""
         },
-        "Effect": "Allow",
-        "Sid": ""
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:DeleteItem",
+                "dynamodb:RestoreTableToPointInTime",
+                "dynamodb:ListTagsOfResource",
+                "dynamodb:CreateBackup",
+                "dynamodb:UpdateGlobalTable",
+                "dynamodb:DeleteTable",
+                "dynamodb:UpdateContinuousBackups",
+                "dynamodb:DescribeTable",
+                "dynamodb:GetItem",
+                "dynamodb:DescribeContinuousBackups",
+                "dynamodb:CreateGlobalTable",
+                "dynamodb:BatchGetItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:UpdateTimeToLive",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:PutItem",
+                "dynamodb:Scan",
+                "dynamodb:DescribeStream",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:DescribeTimeToLive",
+                "dynamodb:CreateTable",
+                "dynamodb:UpdateGlobalTableSettings",
+                "dynamodb:DescribeGlobalTableSettings",
+                "dynamodb:DescribeGlobalTable",
+                "dynamodb:GetShardIterator",
+                "dynamodb:RestoreTableFromBackup",
+                "dynamodb:DeleteBackup",
+                "dynamodb:DescribeBackup",
+                "dynamodb:UpdateTable",
+                "dynamodb:GetRecords"
+            ],
+            "Resource": "arn:aws:dynamodb:*:*:table/*"
         }
     ]
 }
@@ -89,8 +127,8 @@ resource "aws_lambda_function" "subscriptions_lambda" {
     s3_bucket       = "${aws_s3_bucket.lambda_bucket.id}"
     s3_key          = "${aws_s3_bucket_object.lambda_code.key}"
 
-    handler         = "subscriptions.handler"
-    runtime         = "nodejs8.10"
+    handler         = "subscriptions.lambda_handler" #"subscriptions.handler"
+    runtime         = "python3.7" #"nodejs8.10"
 
     role = "${aws_iam_role.lambda_role.arn}"
 }
@@ -114,7 +152,7 @@ resource "aws_lambda_permission" "stockdata_api" {
     function_name   = "${aws_lambda_function.stockdata_lambda.arn}"
     principal       = "apigateway.amazonaws.com"
 
-    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*/*"
+    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*${aws_api_gateway_resource.stockdata_resource.path}"
 }
 
 resource "aws_lambda_permission" "stocklist_api" {
@@ -123,7 +161,7 @@ resource "aws_lambda_permission" "stocklist_api" {
     function_name   = "${aws_lambda_function.stocklist_lambda.arn}"
     principal       = "apigateway.amazonaws.com"
 
-    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*/*"
+    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*${aws_api_gateway_resource.stocklist_resource.path}"
 }
 
 resource "aws_lambda_permission" "subscriptions_api" {
@@ -132,7 +170,7 @@ resource "aws_lambda_permission" "subscriptions_api" {
     function_name   = "${aws_lambda_function.subscriptions_lambda.arn}"
     principal       = "apigateway.amazonaws.com"
 
-    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*/*"
+    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*${aws_api_gateway_resource.subscriptions_resource.path}"
 }
 
 resource "aws_lambda_permission" "subscribe_api" {
@@ -141,5 +179,5 @@ resource "aws_lambda_permission" "subscribe_api" {
     function_name   = "${aws_lambda_function.subscribe_lambda.arn}"
     principal       = "apigateway.amazonaws.com"
 
-    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*/*"
+    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*${aws_api_gateway_resource.subscribe_resource.path}"
 }
