@@ -59,7 +59,35 @@ EOF
     
 }
 
-#add policy for dynamodb
+#policy for dynamodb
+data "aws_iam_policy_document" "dynamo_policy" {
+    version = "2012-10-17"
+    statement {
+        sid = ""
+        effect = "Allow"
+        actions = [
+            "dynamodb:BatchGetItem",
+            "dynamodb:BatchWriteItem",
+            "dynamodb:ConditionCheckItem",
+            "dynamodb:PutItem",
+            "dynamodb:DescribeTable",
+            "dynamodb:DeleteItem",
+            "dynamodb:GetItem",
+            "dynamodb:Scan",
+            "dynamodb:Query",
+            "dynamodb:UpdateItem",
+            "dynamodb:UpdateTable",
+            "dynamodb:GetRecords"
+        ]
+        resources = ["${aws_dynamodb_table.user_subscriptions_table.arn}"]
+    }
+}
+
+resource "aws_iam_role_policy" "dynamodb_role_policy" {
+  name = "dynamo-db"
+  policy = "${data.aws_iam_policy_document.dynamo_policy.json}"
+  role = "${aws_iam_role.lambda_role.id}"
+}
 
 resource "aws_lambda_function" "stockdata_lambda" {
     function_name   = "stockdata"
