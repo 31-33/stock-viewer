@@ -46,17 +46,47 @@ resource "aws_iam_role" "lambda_role" {
     "Version": "2012-10-17",
     "Statement": [
         {
-        "Action": "sts:AssumeRole",
-        "Principal": {
-            "Service": "lambda.amazonaws.com"
-        },
-        "Effect": "Allow",
-        "Sid": ""
+            "Action": "sts:AssumeRole",
+            "Principal": {
+                "Service": "lambda.amazonaws.com"
+            },
+            "Effect": "Allow",
+            "Sid": ""
         }
     ]
 }
 EOF
     
+}
+
+#policy for dynamodb
+data "aws_iam_policy_document" "dynamo_policy" {
+    version = "2012-10-17"
+    statement {
+        sid = ""
+        effect = "Allow"
+        actions = [
+            "dynamodb:BatchGetItem",
+            "dynamodb:BatchWriteItem",
+            "dynamodb:ConditionCheckItem",
+            "dynamodb:PutItem",
+            "dynamodb:DescribeTable",
+            "dynamodb:DeleteItem",
+            "dynamodb:GetItem",
+            "dynamodb:Scan",
+            "dynamodb:Query",
+            "dynamodb:UpdateItem",
+            "dynamodb:UpdateTable",
+            "dynamodb:GetRecords"
+        ]
+        resources = ["${aws_dynamodb_table.user_subscriptions_table.arn}"]
+    }
+}
+
+resource "aws_iam_role_policy" "dynamodb_role_policy" {
+  name = "dynamo-db"
+  policy = "${data.aws_iam_policy_document.dynamo_policy.json}"
+  role = "${aws_iam_role.lambda_role.id}"
 }
 
 resource "aws_lambda_function" "stockdata_lambda" {
@@ -89,8 +119,8 @@ resource "aws_lambda_function" "subscriptions_lambda" {
     s3_bucket       = "${aws_s3_bucket.lambda_bucket.id}"
     s3_key          = "${aws_s3_bucket_object.lambda_code.key}"
 
-    handler         = "subscriptions.handler"
-    runtime         = "nodejs8.10"
+    handler         = "subscriptions.lambda_handler" #"subscriptions.handler"
+    runtime         = "python3.6" #"nodejs8.10"
 
     role = "${aws_iam_role.lambda_role.arn}"
 }
@@ -101,8 +131,8 @@ resource "aws_lambda_function" "subscribe_lambda" {
     s3_bucket       = "${aws_s3_bucket.lambda_bucket.id}"
     s3_key          = "${aws_s3_bucket_object.lambda_code.key}"
 
-    handler         = "subscribe.handler"
-    runtime         = "nodejs8.10"
+    handler         = "subscribe.lambda_handler"
+    runtime         = "python3.6"
 
     role = "${aws_iam_role.lambda_role.arn}"
 }
@@ -114,7 +144,7 @@ resource "aws_lambda_permission" "stockdata_api" {
     function_name   = "${aws_lambda_function.stockdata_lambda.arn}"
     principal       = "apigateway.amazonaws.com"
 
-    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*/*"
+    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*${aws_api_gateway_resource.stockdata_resource.path}"
 }
 
 resource "aws_lambda_permission" "stocklist_api" {
@@ -123,7 +153,7 @@ resource "aws_lambda_permission" "stocklist_api" {
     function_name   = "${aws_lambda_function.stocklist_lambda.arn}"
     principal       = "apigateway.amazonaws.com"
 
-    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*/*"
+    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*${aws_api_gateway_resource.stocklist_resource.path}"
 }
 
 resource "aws_lambda_permission" "subscriptions_api" {
@@ -132,7 +162,7 @@ resource "aws_lambda_permission" "subscriptions_api" {
     function_name   = "${aws_lambda_function.subscriptions_lambda.arn}"
     principal       = "apigateway.amazonaws.com"
 
-    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*/*"
+    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*${aws_api_gateway_resource.subscriptions_resource.path}"
 }
 
 resource "aws_lambda_permission" "subscribe_api" {
@@ -141,5 +171,5 @@ resource "aws_lambda_permission" "subscribe_api" {
     function_name   = "${aws_lambda_function.subscribe_lambda.arn}"
     principal       = "apigateway.amazonaws.com"
 
-    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*/*"
+    source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*${aws_api_gateway_resource.subscribe_resource.path}"
 }
