@@ -52,50 +52,14 @@ resource "aws_iam_role" "lambda_role" {
             },
             "Effect": "Allow",
             "Sid": ""
-        },
-        {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": [
-                "dynamodb:DeleteItem",
-                "dynamodb:RestoreTableToPointInTime",
-                "dynamodb:ListTagsOfResource",
-                "dynamodb:CreateBackup",
-                "dynamodb:UpdateGlobalTable",
-                "dynamodb:DeleteTable",
-                "dynamodb:UpdateContinuousBackups",
-                "dynamodb:DescribeTable",
-                "dynamodb:GetItem",
-                "dynamodb:DescribeContinuousBackups",
-                "dynamodb:CreateGlobalTable",
-                "dynamodb:BatchGetItem",
-                "dynamodb:BatchWriteItem",
-                "dynamodb:UpdateTimeToLive",
-                "dynamodb:ConditionCheckItem",
-                "dynamodb:PutItem",
-                "dynamodb:Scan",
-                "dynamodb:DescribeStream",
-                "dynamodb:Query",
-                "dynamodb:UpdateItem",
-                "dynamodb:DescribeTimeToLive",
-                "dynamodb:CreateTable",
-                "dynamodb:UpdateGlobalTableSettings",
-                "dynamodb:DescribeGlobalTableSettings",
-                "dynamodb:DescribeGlobalTable",
-                "dynamodb:GetShardIterator",
-                "dynamodb:RestoreTableFromBackup",
-                "dynamodb:DeleteBackup",
-                "dynamodb:DescribeBackup",
-                "dynamodb:UpdateTable",
-                "dynamodb:GetRecords"
-            ],
-            "Resource": "arn:aws:dynamodb:*:*:table/*"
         }
     ]
 }
 EOF
     
 }
+
+#add policy for dynamodb
 
 resource "aws_lambda_function" "stockdata_lambda" {
     function_name   = "stockdata"
@@ -128,7 +92,7 @@ resource "aws_lambda_function" "subscriptions_lambda" {
     s3_key          = "${aws_s3_bucket_object.lambda_code.key}"
 
     handler         = "subscriptions.lambda_handler" #"subscriptions.handler"
-    runtime         = "python3.7" #"nodejs8.10"
+    runtime         = "python3.6" #"nodejs8.10"
 
     role = "${aws_iam_role.lambda_role.arn}"
 }
@@ -139,8 +103,8 @@ resource "aws_lambda_function" "subscribe_lambda" {
     s3_bucket       = "${aws_s3_bucket.lambda_bucket.id}"
     s3_key          = "${aws_s3_bucket_object.lambda_code.key}"
 
-    handler         = "subscribe.handler"
-    runtime         = "nodejs8.10"
+    handler         = "subscribe.lambda_handler"
+    runtime         = "python3.6"
 
     role = "${aws_iam_role.lambda_role.arn}"
 }
