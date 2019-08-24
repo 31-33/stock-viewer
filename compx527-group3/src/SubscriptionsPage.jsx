@@ -38,6 +38,9 @@ class SubscriptionsPage extends Component {
   }
 
   updateSubscription = async (stockId, subscribe) => {
+    const { subscriptions } = this.state;
+    subscribe ? subscriptions.add(stockId) : subscriptions.delete(stockId);
+    this.setState({ subscriptions });
     API.post(
       'awsApiGateway',
       '/subscribe',

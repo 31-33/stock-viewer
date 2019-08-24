@@ -16,7 +16,7 @@ class StockViewComponent extends Component {
     
     this.state = {
       loading: true,
-      data: null,
+      datapoints: null,
       name: false,
       dateRange: 'q', // [w, m, q, y]
     };
@@ -42,15 +42,15 @@ class StockViewComponent extends Component {
       }
     ).then(({ name, datapoints }) => {
       this.setState({
-        loading: true,
+        loading: false,
         name,
-        data: datapoints,
+        datapoints,
       });
     });
   }
 
   render() {
-    const { loading, data, name, dateRange } = this.state;
+    const { loading, datapoints, name, dateRange } = this.state;
 
     return (
       <Card>
@@ -62,7 +62,7 @@ class StockViewComponent extends Component {
               <ResponsiveContainer>
                 <LineChart
                   margin={{ top: 10, right: 10, bottom: 20, left: 0 }}
-                  data={data.datapoints}
+                  data={datapoints}
                 >
                   <XAxis
                     label={{
