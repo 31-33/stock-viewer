@@ -98,6 +98,10 @@ resource "aws_api_gateway_method" "stockdata_method" {
   http_method = "GET"
   authorization = "COGNITO_USER_POOLS"
   authorizer_id = "${aws_api_gateway_authorizer.api_auth.id}"
+  request_parameters = {
+    "method.request.querystring.stockId" = true
+    "method.request.querystring.dateRange" = true
+  }
 }
 
 resource "aws_api_gateway_integration" "stockdata_integration" {
@@ -107,6 +111,10 @@ resource "aws_api_gateway_integration" "stockdata_integration" {
   type = "AWS_PROXY"
   uri = "${aws_lambda_function.stockdata_lambda.invoke_arn}"
   integration_http_method = "POST"
+  request_parameters = {
+    "integration.request.querystring.stockId" = "method.request.querystring.stockId"
+    "integration.request.querystring.dateRange" = "method.request.querystring.dateRange"
+  }
 }
 
 resource "aws_api_gateway_method_response" "stockdata_method_response" {
@@ -210,6 +218,10 @@ resource "aws_api_gateway_method" "subscribe_method" {
   http_method = "POST"
   authorization = "COGNITO_USER_POOLS"
   authorizer_id = "${aws_api_gateway_authorizer.api_auth.id}"
+  request_parameters = {
+    "method.request.querystring.stockId" = true
+    "method.request.querystring.dateRange" = true
+  }
 }
 
 resource "aws_api_gateway_integration" "subscribe_integration" {
@@ -219,6 +231,10 @@ resource "aws_api_gateway_integration" "subscribe_integration" {
   type = "AWS_PROXY"
   uri = "${aws_lambda_function.subscribe_lambda.invoke_arn}"
   integration_http_method = "POST"
+  request_parameters = {
+    "integration.request.querystring.stockId" = "method.request.querystring.stockId"
+    "integration.request.querystring.dateRange" = "method.request.querystring.dateRange"
+  }
 }
 
 resource "aws_api_gateway_method_response" "subscribe_method_response" {
