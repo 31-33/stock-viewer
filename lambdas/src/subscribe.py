@@ -8,11 +8,15 @@ def lambda_handler(event, context):
     table = dynamo_db.Table('subscriptions')
     #get what user the request was sent from 
     cognito_username = event['requestContext']['authorizer']['claims']['cognito:username']
+    
+    # body = event['body']
+    # params = json.loads(body)
+    # IDSN = params['IDSN']
+    # subscribe = params['subscribe']
+
     #parse the stock and if to subscribe or unsubscribe
-    body = event['body']
-    params = json.loads(body)
-    IDSN = params['IDSN']
-    subscribe = params['subscribe']
+    IDSN = event['queryStringParameters']['IDSN']
+    subscribe = event['queryStringParameters']['subscribe']
     
     #search for the user's item in the db
     response = table.get_item(
