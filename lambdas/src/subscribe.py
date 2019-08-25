@@ -59,7 +59,7 @@ def lambda_handler(event, context):
             )
     #return the state of the stock now in the user db
     return_state = {
-        'state': state
+        'res': state
     }
     return {
         'statusCode': 200,

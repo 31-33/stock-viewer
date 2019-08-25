@@ -2,7 +2,7 @@ import json
 
 def lambda_handler(event, context):
     x = {
-        'data': [
+        'stocklist': [
             {'stockId': 0, 'name': "Stock0"},
             {'stockId': 1, 'name': "Stock1"},
             {'stockId': 2, 'name': "Stock2"},
