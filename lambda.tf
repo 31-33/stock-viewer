@@ -107,8 +107,8 @@ resource "aws_lambda_function" "stocklist_lambda" {
     s3_bucket       = "${aws_s3_bucket.lambda_bucket.id}"
     s3_key          = "${aws_s3_bucket_object.lambda_code.key}"
 
-    handler         = "stocklist.handler"
-    runtime         = "nodejs8.10"
+    handler         = "stocklist.lambda_handler"
+    runtime         = "python3.6"
 
     role = "${aws_iam_role.lambda_role.arn}"
 }
