@@ -220,7 +220,7 @@ resource "aws_api_gateway_method" "subscribe_method" {
   authorizer_id = "${aws_api_gateway_authorizer.api_auth.id}"
   request_parameters = {
     "method.request.querystring.stockId" = true
-    "method.request.querystring.dateRange" = true
+    "method.request.querystring.subscribe" = true
   }
 }
 

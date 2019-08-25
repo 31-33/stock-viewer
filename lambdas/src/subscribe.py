@@ -15,7 +15,7 @@ def lambda_handler(event, context):
     # subscribe = params['subscribe']
 
     #parse the stock and if to subscribe or unsubscribe
-    IDSN = event['queryStringParameters']['IDSN']
+    IDSN = event['queryStringParameters']['stockId']
     subscribe = event['queryStringParameters']['subscribe']
     
     #search for the user's item in the db
