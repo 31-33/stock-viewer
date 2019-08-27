@@ -3,10 +3,10 @@ import json
 def lambda_handler(event, context):
     x = {
         'stocklist': [
-            {'stockId': 0, 'name': "Stock0"},
-            {'stockId': 1, 'name': "Stock1"},
-            {'stockId': 2, 'name': "Stock2"},
-            {'stockId': 3, 'name': "Stock3"}
+            {'stockId': '0', 'name': "Stock0"},
+            {'stockId': '1', 'name': "Stock1"},
+            {'stockId': '2', 'name': "Stock2"},
+            {'stockId': '3', 'name': "Stock3"}
             ]
         }
     return {

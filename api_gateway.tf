@@ -233,7 +233,7 @@ resource "aws_api_gateway_integration" "subscribe_integration" {
   integration_http_method = "POST"
   request_parameters = {
     "integration.request.querystring.stockId" = "method.request.querystring.stockId"
-    "integration.request.querystring.dateRange" = "method.request.querystring.dateRange"
+    "integration.request.querystring.subscribe" = "method.request.querystring.subscribe"
   }
 }
 
