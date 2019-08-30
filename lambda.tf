@@ -28,6 +28,12 @@ resource "archive_file" "lambda_funcs" {
     output_path = "lambdas/${var.lambdas_version}/code.zip"
     source_dir = "lambdas/src"
 } 
+
+resource "archive_file" "lambda-rds-funcs" {
+    type = "zip"
+    output_path = "lambdas/${var.lambdas_version}/rds-code.zip"
+    source_dir = "lambdas/src/rds-code"
+}
 #bucket object allows the code to be uploaded from local system
 resource "aws_s3_bucket_object" "lambda_code" {
     bucket  = "${aws_s3_bucket.lambda_bucket.id}"
@@ -35,6 +41,14 @@ resource "aws_s3_bucket_object" "lambda_code" {
     source = "lambdas/${var.lambdas_version}/code.zip"
     acl = "public-read"
     depends_on = [archive_file.lambda_funcs]
+}
+
+resource "aws_s3_bucket_object" "lambda-rds-code" {
+    bucket  = "${aws_s3_bucket.lambda_bucket.id}"
+    key  = "V${var.lambdas_version}/rds-code.zip"
+    source = "lambdas/${var.lambdas_version}/rds-code.zip"
+    acl = "public-read"
+    depends_on = [archive_file.lambda-rds-funcs]
 }
 
 
@@ -89,6 +103,98 @@ resource "aws_iam_role_policy" "dynamodb_role_policy" {
   role = "${aws_iam_role.lambda_role.id}"
 }
 
+data "aws_iam_policy_document" "RDS_policy" {
+    version = "2012-10-17"
+    statement {
+        sid = "RDSDataServiceAccess"
+        effect = "Allow"
+        actions = [
+            "secretsmanager:CreateSecret",
+            "secretsmanager:ListSecrets",
+            "secretsmanager:GetRandomPassword",
+            "tag:GetResources",
+            "rds-data:BatchExecuteStatement",
+            "rds-data:BeginTransaction",
+            "rds-data:CommitTransaction",
+            "rds-data:ExecuteStatement",
+            "rds-data:RollbackTransaction"
+        ]
+        resources = ["*"]
+    }
+
+    statement {
+        sid = "SecretsManagerDbCredentialsAccess"
+        effect = "Allow"
+        actions =  [
+            "secretsmanager:GetSecretValue",
+            "secretsmanager:PutResourcePolicy",
+            "secretsmanager:PutSecretValue",
+            "secretsmanager:DeleteSecret",
+            "secretsmanager:DescribeSecret",
+            "secretsmanager:TagResource"
+        ]
+        resources = [
+            "${aws_secretsmanager_secret.db-secret.arn}"
+            ]
+    }
+}
+
+resource "aws_iam_role_policy" "RDS_role_policy" {
+  name = "rds"
+  policy = "${data.aws_iam_policy_document.RDS_policy.json}"
+  role = "${aws_iam_role.lambda_role.id}"
+}
+
+data "aws_iam_policy_document" "s3_policy" {
+    version = "2012-10-17"
+    statement {
+        sid = "accessToPublicS3bucket"
+        effect = "Allow"
+        actions = [
+            "s3:Get*",
+            "s3:List*"
+        ]
+        resources = ["*"]
+    }
+}
+
+resource "aws_iam_role_policy" "S3_read_policy" {
+    name = "s3_policy"
+    policy = "${data.aws_iam_policy_document.s3_policy.json}"
+    role = "${aws_iam_role.lambda_role.id}"
+}
+
+
+
+resource "aws_iam_policy" "lambda_logging" {
+  name = "lambda_logging"
+  path = "/"
+  description = "IAM policy for logging from a lambda"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+         "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:*:*:*",
+      "Effect": "Allow"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_logs" {
+  role = "${aws_iam_role.lambda_role.id}"
+  policy_arn = "${aws_iam_policy.lambda_logging.arn}"
+}
+
+
 resource "aws_lambda_function" "stockdata_lambda" {
     function_name   = "stockdata"
 
@@ -107,8 +213,8 @@ resource "aws_lambda_function" "stocklist_lambda" {
     s3_bucket       = "${aws_s3_bucket.lambda_bucket.id}"
     s3_key          = "${aws_s3_bucket_object.lambda_code.key}"
 
-    handler         = "stocklist.handler"
-    runtime         = "nodejs8.10"
+    handler         = "stocklist.lambda_handler"
+    runtime         = "python3.6"
 
     role = "${aws_iam_role.lambda_role.arn}"
 }

@@ -220,7 +220,7 @@ resource "aws_api_gateway_method" "subscribe_method" {
   authorizer_id = "${aws_api_gateway_authorizer.api_auth.id}"
   request_parameters = {
     "method.request.querystring.stockId" = true
-    "method.request.querystring.dateRange" = true
+    "method.request.querystring.subscribe" = true
   }
 }
 
@@ -233,7 +233,7 @@ resource "aws_api_gateway_integration" "subscribe_integration" {
   integration_http_method = "POST"
   request_parameters = {
     "integration.request.querystring.stockId" = "method.request.querystring.stockId"
-    "integration.request.querystring.dateRange" = "method.request.querystring.dateRange"
+    "integration.request.querystring.subscribe" = "method.request.querystring.subscribe"
   }
 }
 
