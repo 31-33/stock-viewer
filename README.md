@@ -15,7 +15,9 @@ Deploy
 Destroy / clean-up resources when finished
 > terraform destroy
 
-
+Also ensure to install the boto3 package (aws sdk for python) into the 
+>/lambdas/src/rds-code 
+directory before using terraform apply 
 ---
 ## API Routes
 Client uses the following routes, configured using AWS API Gateway
