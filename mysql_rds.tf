@@ -46,7 +46,7 @@ resource "aws_lambda_function" "rds-populate-lambda" {
     handler         = "rdsData.lambda_handler"
     runtime         = "python3.6"
 
-    timeout = 300
+    timeout = 330
 
     environment {
         variables = {

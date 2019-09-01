@@ -44,7 +44,7 @@ def lambda_handler(event, context):
                     Bucket=bucket_name,
                     Key=dir.key,
                     ExpressionType='SQL',
-                    Expression='SELECT s.ISIN, s.StartPrice, s.EndPrice, s.TradedVolume, s."Date", s."Time" FROM s3object s limit 1000',
+                    Expression='SELECT s.ISIN, s.SecurityDesc, s.StartPrice, s.EndPrice, s.TradedVolume, s."Date", s."Time" FROM s3object s limit 1000',
                     InputSerialization={'CSV': {'FileHeaderInfo': 'Use'}},
                     OutputSerialization={'CSV': {}}
                     )
@@ -55,7 +55,7 @@ def lambda_handler(event, context):
                         csvString = StringIO(records)
                         reader = csv.reader(csvString, delimiter=',')
                         for row in reader:
-                            if (len(row) == 6):
+                            if (len(row) == 7):
                                 param = [
                                     {
                                         'name': 'ISIN',
@@ -64,33 +64,39 @@ def lambda_handler(event, context):
                                             }
                                     },
                                     {
-                                        'name':'startPrice',
+                                        'name': 'securityDesc',
                                         'value': {
-                                            'doubleValue': float(row[1])
-                                        }
+                                            'stringValue': row[1]
+                                            }
                                     },
                                     {
-                                        'name':'endPrice',
+                                        'name':'startPrice',
                                         'value': {
                                             'doubleValue': float(row[2])
                                         }
                                     },
                                     {
+                                        'name':'endPrice',
+                                        'value': {
+                                            'doubleValue': float(row[3])
+                                        }
+                                    },
+                                    {
                                         'name':'volume',
                                         'value': {
-                                            'longValue': int(row[3])
+                                            'longValue': int(row[4])
                                         }
                                     },
                                     {
                                         'name':'date',
                                         'value': {
-                                            'stringValue': row[4]
+                                            'stringValue': row[5]
                                         }
                                     },
                                     {
                                         'name':'time',
                                         'value': {
-                                            'stringValue': row[5]+":00"
+                                            'stringValue': row[6]+":00"
                                         }
                                     }
                                 ]
@@ -99,7 +105,7 @@ def lambda_handler(event, context):
                                 if (len(rows) >= 1000):
                                     num_writes += 1
                                     insert_query = (
-                                        'INSERT INTO stocks (ISIN, startPrice, endPrice, volume, date, time) VALUES(:ISIN, :startPrice, :endPrice, :volume, :date, :time)')
+                                        'INSERT INTO stocks (ISIN, securityDesc, startPrice, endPrice, volume, date, time) VALUES(:ISIN, :securityDesc, :startPrice, :endPrice, :volume, :date, :time)')
                                         
                                     insert_response = rdsData.batch_execute_statement(
                                         database=database,
@@ -114,7 +120,7 @@ def lambda_handler(event, context):
     if (len(rows) > 0):
         num_writes += 1
         insert_query = (
-            'INSERT INTO stocks (ISIN, startPrice, endPrice, volume, date, time) VALUES(:ISIN, :startPrice, :endPrice, :volume, :date, :time)')
+            'INSERT INTO stocks (ISIN, securityDesc, startPrice, endPrice, volume, date, time) VALUES(:ISIN, :securityDesc, :startPrice, :endPrice, :volume, :date, :time)')
             
         insert_response = rdsData.batch_execute_statement(
             database=database,
@@ -136,6 +142,7 @@ def createTable(rdsData, cluster_arn, secret_arn, database):
     
     table_statement = ('CREATE TABLE IF NOT EXISTS stocks('
                         'ISIN VARCHAR(25) NOT NULL,'
+                        'securityDesc VARCHAR(50),'
                         'startPrice FLOAT,'
                         'endPrice FLOAT,'
                         'volume INT,'
