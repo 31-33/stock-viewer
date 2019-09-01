@@ -211,10 +211,19 @@ resource "aws_lambda_function" "stocklist_lambda" {
     function_name   = "stocklist"
 
     s3_bucket       = "${aws_s3_bucket.lambda_bucket.id}"
-    s3_key          = "${aws_s3_bucket_object.lambda_code.key}"
+    s3_key          = "${aws_s3_bucket_object.lambda-rds-code.key}"
 
     handler         = "stocklist.lambda_handler"
     runtime         = "python3.6"
+    timeout = 10
+
+    environment {
+        variables = {
+            rds_cluster_arn = "${aws_rds_cluster.stock_rds_cluster.arn}",
+            rds_secret_arn = "${aws_secretsmanager_secret.db-secret.arn}",
+            database = "${aws_rds_cluster.stock_rds_cluster.database_name}"
+        }
+    }
 
     role = "${aws_iam_role.lambda_role.arn}"
 }
