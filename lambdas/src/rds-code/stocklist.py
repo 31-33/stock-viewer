@@ -27,6 +27,16 @@ def lambda_handler(event, context):
             stock_dict['name']  = stock[1]['stringValue']
             reply['stocklist'].append(stock_dict)      
 
+    else:
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin' : '*',
+                'Content-Type': 'application/json' 
+            },
+            'body': json.dumps({"ERROR": "No stocks returned"})
+        }
+
     return {
         'statusCode': 200,
         'headers': {
