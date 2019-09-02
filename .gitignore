@@ -2,6 +2,10 @@
 
 /lambdas/*
 !/lambdas/src
+/lambdas/src/rds-code/*
+!/lambdas/src/rds-code/*.py
+/lambdas/src/rds-code/six.py
+
 
 # dependencies
 .terraform

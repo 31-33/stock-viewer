@@ -19,12 +19,16 @@ def lambda_handler(event, context):
     #if the user was subscribed to stocks return the list
     if (len(item) > 0):
         stocks = item[0]['stocks']
-    
+        
+    return_stocks = {
+        'subscriptions': stocks
+    }
+
     return {
         'statusCode': 200,
         'headers': {
             "Access-Control-Allow-Origin" : "*",
             'Content-Type': 'application/json' 
         },
-        'body': json.dumps(stocks)
+        'body': json.dumps(return_stocks)
     }

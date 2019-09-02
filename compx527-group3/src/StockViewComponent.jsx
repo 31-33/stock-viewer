@@ -18,7 +18,7 @@ class StockViewComponent extends Component {
       loading: true,
       datapoints: null,
       name: false,
-      dateRange: 'q', // [w, m, q, y]
+      dateRange: '7d', // [1d, 3d, 7d]
     };
   }
 
@@ -89,43 +89,24 @@ class StockViewComponent extends Component {
         <Card.Footer as={ButtonToolbar}>
           <Button
             size='sm'
-            variant={dateRange === 'y' ? 'dark' : 'outline-dark'}
-            onClick={() => {
-              this.setState({ dateRange: 'y' });
-              this.refreshData();
-            }}
+            variant={dateRange === '1d' ? 'dark' : 'outline-dark'}
+            onClick={() => this.setState({ dateRange: '1d' }, () => this.refreshData())}
           >
-            1 Year
+            1 Day
           </Button>
           <Button
             size='sm'
-            variant={dateRange === 'q' ? 'dark' : 'outline-dark'}
-            onClick={() => {
-              this.setState({ dateRange: 'q' });
-              this.refreshData();
-            }}
+            variant={dateRange === '3d' ? 'dark' : 'outline-dark'}
+            onClick={() => this.setState({ dateRange: '3d' }, () => this.refreshData())}
           >
-            3 Months
+            3 Days
           </Button>
           <Button
             size='sm'
-            variant={dateRange === 'm' ? 'dark' : 'outline-dark'}
-            onClick={() => {
-              this.setState({ dateRange: 'm' });
-              this.refreshData();
-            }}
+            variant={dateRange === '7d' ? 'dark' : 'outline-dark'}
+            onClick={() => this.setState({ dateRange: '7d' }, () => this.refreshData())}
           >
-            1 Month
-          </Button>
-          <Button
-            size='sm'
-            variant={dateRange === 'w' ? 'dark' : 'outline-dark'}
-            onClick={() => {
-              this.setState({ dateRange: 'w' });
-              this.refreshData();
-            }}
-          >
-            1 Week
+            7 Days
           </Button>
         </Card.Footer>
       </Card>
