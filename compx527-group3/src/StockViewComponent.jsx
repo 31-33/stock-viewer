@@ -90,40 +90,28 @@ class StockViewComponent extends Component {
           <Button
             size='sm'
             variant={dateRange === 'y' ? 'dark' : 'outline-dark'}
-            onClick={() => {
-              this.setState({ dateRange: 'y' });
-              this.refreshData();
-            }}
+            onClick={() => this.setState({ dateRange: 'y' }, () => this.refreshData())}
           >
             1 Year
           </Button>
           <Button
             size='sm'
             variant={dateRange === 'q' ? 'dark' : 'outline-dark'}
-            onClick={() => {
-              this.setState({ dateRange: 'q' });
-              this.refreshData();
-            }}
+            onClick={() => this.setState({ dateRange: 'q' }, () => this.refreshData())}
           >
             3 Months
           </Button>
           <Button
             size='sm'
             variant={dateRange === 'm' ? 'dark' : 'outline-dark'}
-            onClick={() => {
-              this.setState({ dateRange: 'm' });
-              this.refreshData();
-            }}
+            onClick={() => this.setState({ dateRange: 'm' }, () => this.refreshData())}
           >
             1 Month
           </Button>
           <Button
             size='sm'
             variant={dateRange === 'w' ? 'dark' : 'outline-dark'}
-            onClick={() => {
-              this.setState({ dateRange: 'w' });
-              this.refreshData();
-            }}
+            onClick={() => this.setState({ dateRange: 'w' }, () => this.refreshData())}
           >
             1 Week
           </Button>
