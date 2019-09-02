@@ -59,7 +59,7 @@ def lambda_handler(event, context):
         }
 
     query = (
-        f'SELECT s.startPrice, s.date FROM stocks s WHERE s.ISIN=\'{ISIN}\' AND s.date >= \'{minDate}\' ORDER BY s.date')
+        f'SELECT s.startPrice, s.date, s.time FROM stocks s WHERE s.ISIN=\'{ISIN}\' AND s.date >= \'{minDate}\' ORDER BY s.date')
 
     response = rdsData.execute_statement(
         database=database,
@@ -72,7 +72,7 @@ def lambda_handler(event, context):
         for record in response['records']:
             data = {}
             data['price'] = record[0]['doubleValue']
-            data['dateTime'] = record[1]['stringValue']
+            data['dateTime'] = f"{record[1]['stringValue']}T{record[2]['stringValue']}" 
             reply['datapoints'].append(data)
     else:
         return {
