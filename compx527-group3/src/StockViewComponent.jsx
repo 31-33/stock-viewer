@@ -3,7 +3,7 @@ import { API } from 'aws-amplify';
 
 import Card from 'react-bootstrap/Card';
 import Spinner from 'react-bootstrap/Spinner';
-import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Button from 'react-bootstrap/Button';
 import moment from 'moment';
 
@@ -54,7 +54,7 @@ class StockViewComponent extends Component {
     const { loading, datapoints, name, dateRange } = this.state;
 
     return (
-      <Card>
+      <Card style={{ marginBottom: '1em' }}>
         <Card.Header>{name}</Card.Header>
         <Card.Body style={{ width: '100%', height: '300px' }}>
           {loading
@@ -89,7 +89,7 @@ class StockViewComponent extends Component {
             )
           }
         </Card.Body>
-        <Card.Footer as={ButtonToolbar}>
+        <Card.Footer as={ButtonGroup}>
           <Button
             size='sm'
             variant={dateRange === '1d' ? 'dark' : 'outline-dark'}

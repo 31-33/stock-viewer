@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { API } from 'aws-amplify';
 import StockViewComponent from './StockViewComponent';
 
-import CardColumns from 'react-bootstrap/CardColumns';
 import Spinner from 'react-bootstrap/Spinner';
 
 class StockViewPage extends Component {
@@ -30,13 +29,9 @@ class StockViewPage extends Component {
 
   render() {
     const { loading, subscriptions } = this.state;
-    return (
-      <CardColumns>
-        {loading
-          ? <Spinner animation='border' />
-          : subscriptions.map(stockId => <StockViewComponent stockId={stockId} key={stockId} />)}
-      </CardColumns>
-    );
+    return loading
+      ? <Spinner animation='border' />
+      : subscriptions.map(stockId => <StockViewComponent stockId={stockId} key={stockId} />);
   }
 }
 
