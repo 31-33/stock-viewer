@@ -5,6 +5,7 @@ import Card from 'react-bootstrap/Card';
 import Spinner from 'react-bootstrap/Spinner';
 import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
 import Button from 'react-bootstrap/Button';
+import moment from 'moment';
 
 import {
   ResponsiveContainer, LineChart, XAxis, YAxis, Tooltip, Line,
@@ -69,6 +70,7 @@ class StockViewComponent extends Component {
                       value: "Date",
                       dy: 20,
                     }}
+                    tickFormatter={(tick) => moment(tick).format("DD-MMM")}
                     dataKey="dateTime"
                   />
                   <YAxis
@@ -78,6 +80,7 @@ class StockViewComponent extends Component {
                       angle: -90,
                     }}
                     dataKey="price"
+                    domain={['auto', 'auto']}
                   />
                   <Tooltip />
                   <Line type='monotone' dataKey='price' />
