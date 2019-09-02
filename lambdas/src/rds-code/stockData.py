@@ -16,11 +16,11 @@ def lambda_handler(event, context):
     
     span = None
     if (dateRange == "1d"):
-        span = timedelta(days=1)
+        span = timedelta(days=2)
     elif (dateRange == "3d"):
-        span = timedelta(days=3)
+        span = timedelta(days=4)
     elif (dateRange == "7d"):
-        span = timedelta(days=7)
+        span = timedelta(days=8)
     else:
         return {
             'statusCode': 200,
@@ -59,7 +59,7 @@ def lambda_handler(event, context):
         }
 
     query = (
-        f'SELECT s.startPrice, s.date FROM stocks s WHERE s.ISIN=\'{ISIN}\' AND s.date > \'{minDate}\' ORDER BY s.date')
+        f'SELECT s.startPrice, s.date FROM stocks s WHERE s.ISIN=\'{ISIN}\' AND s.date >= \'{minDate}\' ORDER BY s.date')
 
     response = rdsData.execute_statement(
         database=database,
