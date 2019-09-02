@@ -15,14 +15,21 @@ def lambda_handler(event, context):
     dateRange = event['queryStringParameters']['dateRange']
     
     span = None
-    if (dateRange == "w"):
-        span = timedelta(weeks=1)
-    elif (dateRange == "m"):
-        span = timedelta(weeks=4)
-    elif (dateRange == "q"):
-        span = timedelta(weeks=12)
+    if (dateRange == "1d"):
+        span = timedelta(days=1)
+    elif (dateRange == "3d"):
+        span = timedelta(days=3)
+    elif (dateRange == "7d"):
+        span = timedelta(days=7)
     else:
-        span = timedelta(weeks=56)
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin' : '*',
+                'Content-Type': 'application/json' 
+            },
+            'body': json.dumps({"ERROR": "Invalid date range"})
+        }
 
     today = date.today()
     minDate = (today - span).strftime("%Y-%m-%d")

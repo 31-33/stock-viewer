@@ -297,3 +297,4 @@ resource "aws_lambda_permission" "subscribe_api" {
 
     source_arn      = "${aws_api_gateway_deployment.deployment.execution_arn}/*${aws_api_gateway_resource.subscribe_resource.path}"
 }
+
