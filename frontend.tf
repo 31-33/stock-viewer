@@ -18,7 +18,9 @@ export default {
   CONTENT
 }
 
-# Create an S3 Bucket to hold static front-end content
+
+
+#Setting up an S3 Bucket to hold static front-end content
 resource "aws_s3_bucket" "react_bucket" {
   bucket = "${var.website_bucket}"
   acl    = "public-read"
@@ -53,19 +55,100 @@ POLICY
     command = "aws s3 rm s3://${var.website_bucket} --recursive"
   }
 }
-# TODO: Create cloudfront distribution, and enable HTTPS/TLS
-# resource "aws_cloudfront_distribution" "s3_distribution" {
-#   origin {
-#     domain_name = "${aws_s3_bucket.react_bucket.bucket_regional_domain_name}"
-#     origin_id = "myS3Origin"
 
-#     s3_origin
-#   }
-# }
+data "aws_route53_zone" "external" {
+  name = "amazonaws.com"
+}
 
-output "website_domain" {
-  value = "${aws_s3_bucket.react_bucket.website_domain}"
+# Encapsulate generating a certificate and running Route 53
+module "cert" {
+  source = "github.com/azavea/terraform-aws-acm-certificate?ref=0.1.0"
+  
+  
+    providers = {
+    aws.acm_account     = "aws.certificates"
+    aws.route53_account = "aws.dns"
+    }
+
+  domain_name           = "amazonaws.com"
+  subject_alternative_names = ["*.amazonaws.com"]
+  hosted_zone_id        = "${data.aws_route53_zone.external.zone_id}"
+  validation_record_ttl = "60"
 }
-output "website_endpoint" {
-  value = "${aws_s3_bucket.react_bucket.website_endpoint}"
-}
+
+#Distributing CloudFront
+resource "aws_cloudfront_distribution" "distribution" {
+  origin {
+	domain_name = "${aws_s3_bucket.react_bucket.bucket}.s3.amazonaws.com"
+	origin_id = "website"
+  }
+  enabled = true
+  is_ipv6_enabled = true
+
+  aliases = [
+	"${var.domain_name}"
+  ]
+
+  default_root_object = "index.html"
+
+  default_cache_behavior {
+	allowed_methods = [
+	  "HEAD",
+	  "GET"
+	]
+	cached_methods = [
+	  "HEAD",
+	  "GET"
+	]
+	forwarded_values {
+	  query_string = false
+	  cookies {
+		forward = "none"
+	  }
+	}
+	default_ttl = 3600
+	max_ttl = 86400
+	min_ttl = 0
+	target_origin_id = "website"
+	viewer_protocol_policy = "redirect-to-https"
+	compress = true
+  }
+
+  ordered_cache_behavior {
+	allowed_methods = ["HEAD", "GET"]
+	cached_methods = ["HEAD", "GET"]
+	forwarded_values {
+	  cookies {
+		forward = "none"
+	  }
+	  query_string = false
+	}
+	default_ttl = 31536000
+	max_ttl = 31536000
+	min_ttl = 31536000
+	path_pattern = "assets/*"
+	target_origin_id = "website"
+	viewer_protocol_policy = "redirect-to-https"
+	compress = true
+  }
+
+# Have to specify
+  restrictions {
+	geo_restriction {
+	  restriction_type = "none"
+	}
+  }
+
+	viewer_certificate {
+		acm_certificate_arn      = "${module.cert.arn}"
+		minimum_protocol_version = "TLSv1"
+		ssl_support_method       = "sni-only"
+	}
+
+ 
+  # Do not want to cache 404's as it's a single page application
+	error_caching_min_ttl = 0
+	error_code = 404
+  }
+  
+

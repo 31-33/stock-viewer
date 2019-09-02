@@ -32,7 +32,7 @@ def lambda_handler(event, context):
     #curr_date = today.strftime("20%y-%m-%d")
     num_writes = 0
     rows = []
-    for i in range(10, 1, -1):
+    for i in range(10, 2, -1):
         span = timedelta(days=i)
         prefix_date = (today - span).strftime("%Y-%m-%d")
         dirs = data_bucket.objects.filter(Prefix=prefix_date)
