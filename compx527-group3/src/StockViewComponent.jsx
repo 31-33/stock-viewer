@@ -45,7 +45,10 @@ class StockViewComponent extends Component {
       this.setState({
         loading: false,
         name,
-        datapoints,
+        datapoints: datapoints.map(point => ({
+          price: point.price,
+          dateTime: new Date(point.dateTime).getTime() 
+        })),
       });
     });
   }
@@ -70,6 +73,7 @@ class StockViewComponent extends Component {
                       value: "Date",
                       dy: 20,
                     }}
+                    scale="time"
                     tickFormatter={(tick) => moment(tick).format("DD-MMM")}
                     dataKey="dateTime"
                   />
@@ -82,7 +86,7 @@ class StockViewComponent extends Component {
                     dataKey="price"
                     domain={['auto', 'auto']}
                   />
-                  <Tooltip />
+                  <Tooltip labelFormatter={time => moment(time).format("DD-MMM hh:mm")} />
                   <Line type='monotone' dataKey='price' />
                 </LineChart>
               </ResponsiveContainer>
