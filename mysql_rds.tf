@@ -59,6 +59,39 @@ resource "aws_lambda_function" "rds-populate-lambda" {
     role = "${aws_iam_role.lambda_role.arn}"
 }
 
+
+resource "aws_lambda_function" "rds-update-lambda" {
+    function_name   = "rds-update-data-daily"
+
+    s3_bucket       = "${aws_s3_bucket.lambda_bucket.id}"
+    s3_key          = "${aws_s3_bucket_object.lambda-rds-code.key}"
+
+    handler         = "rdsData-daily.lambda_handler"
+    runtime         = "python3.6"
+
+    timeout = 330
+
+    environment {
+        variables = {
+            rds_cluster_arn = "${aws_rds_cluster.stock_rds_cluster.arn}",
+            rds_secret_arn = "${aws_secretsmanager_secret.db-secret.arn}",
+            database = "${aws_rds_cluster.stock_rds_cluster.database_name}"
+        }
+    }
+
+    role = "${aws_iam_role.lambda_role.arn}"
+}
+
+resource "aws_lambda_permission" "rds-update" {
+    statement_id    = "AllowCloudWatchInvoke"
+    action          = "lambda:InvokeFunction"
+    function_name   = "${aws_lambda_function.rds-update-lambda.arn}"
+    principal       = "events.amazonaws.com"
+
+    source_arn      = "${aws_cloudwatch_event_rule.rds-update-rule.arn}"
+}
+
+
 # data "aws_lambda_invocation" "load-data" {
 #     depends_on = [
 #         "aws_lambda_function.rds-populate-lambda",

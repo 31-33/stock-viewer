@@ -81,3 +81,17 @@ resource "aws_cloudwatch_dashboard" "main" {
 }
 EOF
 }
+
+
+resource "aws_cloudwatch_event_rule" "rds-update-rule" {
+    name        = "updateDataInRds"
+    description = "once a day get new data from s3 bucket and insert in rds"
+    schedule_expression = "rate(1 day)"
+    is_enabled = true
+}
+
+resource "aws_cloudwatch_event_target" "rds-update-target" {
+    rule      = "${aws_cloudwatch_event_rule.rds-update-rule.name}"
+    target_id = "updateRdsWithLambda"
+    arn       = "${aws_lambda_function.rds-update-lambda.arn}"
+}
