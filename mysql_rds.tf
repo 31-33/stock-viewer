@@ -13,7 +13,7 @@ resource "aws_rds_cluster" "stock_rds_cluster" {
     port = 3306
 
     scaling_configuration {
-        auto_pause = true
+        auto_pause = false
         max_capacity = 64
         min_capacity = 1
         seconds_until_auto_pause = 300
