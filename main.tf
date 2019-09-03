@@ -25,3 +25,11 @@ variable "lambda_bucket" {
 variable "lambdas_version" {
   default = "1.0"
 }
+
+variable "db_credentials" {
+    default = {
+      username = "admin",
+      password = "Testing123#"
+    }
+    type = "map"
+}

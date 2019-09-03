@@ -15,7 +15,7 @@ def lambda_handler(event, context):
     # subscribe = params['subscribe']
 
     #parse the stock and if to subscribe or unsubscribe
-    IDSN = event['queryStringParameters']['IDSN']
+    IDSN = event['queryStringParameters']['stockId']
     subscribe = event['queryStringParameters']['subscribe']
     
     #search for the user's item in the db
@@ -31,13 +31,16 @@ def lambda_handler(event, context):
         stocks = response['Item']['stocks']
         valid_update = False
         #check if the request is to unsubscribe or subscribe
-        if subscribe and not (IDSN in stocks):
-            stocks.append(IDSN)
-            valid_update = True
-        elif not subscribe and (IDSN in stocks):
-            stocks.remove(IDSN)
-            valid_update = True
+        if (subscribe == 'true'):
+            if not (IDSN in stocks):
+                stocks.append(IDSN)
+                valid_update = True
+        else:
             state = False
+            if (IDSN in stocks):
+                stocks.remove(IDSN)
+                valid_update = True
+            
         #if it is a valid request make the change in the db
         if valid_update:    
             table.update_item(
@@ -59,7 +62,7 @@ def lambda_handler(event, context):
             )
     #return the state of the stock now in the user db
     return_state = {
-        'state': state
+        'res': state
     }
     return {
         'statusCode': 200,
