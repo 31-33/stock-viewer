@@ -17,15 +17,44 @@ data "external" "cert_request" {
     site_name = "${var.site_name}"
   }
 }
-# s3 Bucket with Website settings
-resource "aws_s3_bucket" "site_bucket" {
-  bucket = "${var.site_name}"
-  acl = "public-read"
+#Setting up an S3 Bucket to hold static front-end content
+resource "aws_s3_bucket" "react_bucket" {
+  bucket = "${var.website_bucket}"
+  acl    = "public-read"
+  depends_on = [local_file.config-file]
+
+  policy = <<POLICY
+{
+    "Version":"2012-10-17",
+    "Statement":[{
+      "Sid":"AddPerm",
+      "Effect":"Allow",
+      "Principal":"*",
+      "Action":["s3:GetObject"],
+      "Resource":["arn:aws:s3:::${var.website_bucket}/*"]
+    }]
+}
+POLICY
+
   website {
     index_document = "index.html"
-    error_document = "error.html"
+    error_document = "index.html"
+  }
+
+  provisioner "local-exec" {
+    # Create build and copy artifacts into bucket
+    command = "cd compx527-group3 && npm run build && aws s3 sync build s3://${var.website_bucket}"
+  }
+
+  provisioner "local-exec" {
+    when = "destroy"
+    # Delete contents of bucket so it may be de-provisioned
+    command = "aws s3 rm s3://${var.website_bucket} --recursive"
   }
 }
+
+
+
 # Route53 Domain Name & Resource Records
 resource "aws_route53_zone" "site_zone" {
   name = "${var.site_name}"
