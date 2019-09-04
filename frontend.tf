@@ -56,39 +56,14 @@ POLICY
   }
 }
 
-data "aws_route53_zone" "external" {
-  name = "amazonaws.com"
-}
-
-# Encapsulate generating a certificate and running Route 53
-module "cert" {
-  source = "github.com/azavea/terraform-aws-acm-certificate?ref=0.1.0"
-  
-  
-    providers = {
-    aws.acm_account     = "aws.certificates"
-    aws.route53_account = "aws.dns"
-    }
-
-  domain_name           = "amazonaws.com"
-  subject_alternative_names = ["*.amazonaws.com"]
-  hosted_zone_id        = "${data.aws_route53_zone.external.zone_id}"
-  validation_record_ttl = "60"
-}
-
-#Distributing CloudFront
-resource "aws_cloudfront_distribution" "distribution" {
+#Cloudfront Distribution
+resource "aws_cloudfront_distribution" "website_distribution" {
   origin {
-	domain_name = "${aws_s3_bucket.react_bucket.bucket}.s3.amazonaws.com"
-	origin_id = "website"
-  }
+    domain_name = "${aws_s3_bucket.react_bucket.bucket_domain_name}"
+    origin_id = "s3-stock-data-viewer"
+}
+
   enabled = true
-  is_ipv6_enabled = true
-
-  aliases = [
-	"${var.domain_name}"
-  ]
-
   default_root_object = "index.html"
 
   default_cache_behavior {
@@ -100,55 +75,42 @@ resource "aws_cloudfront_distribution" "distribution" {
 	  "HEAD",
 	  "GET"
 	]
+    default_ttl = 86400
+    target_origin_id = "s3-stock-data-viewer"
+    viewer_protocol_policy = "redirect-to-https"
+    compress = true
 	forwarded_values {
 	  query_string = false
+      headers = ["Origin"]
+
 	  cookies {
 		forward = "none"
 	  }
 	}
-	default_ttl = 3600
-	max_ttl = 86400
-	min_ttl = 0
-	target_origin_id = "website"
-	viewer_protocol_policy = "redirect-to-https"
-	compress = true
   }
 
-  ordered_cache_behavior {
-	allowed_methods = ["HEAD", "GET"]
-	cached_methods = ["HEAD", "GET"]
-	forwarded_values {
-	  cookies {
-		forward = "none"
-	  }
-	  query_string = false
+  # SPA - Return index.html with 200 response for all paths
+  custom_error_response {
+    error_code = 404
+    response_page_path = "/index.html"
+    response_code = 200
+    error_caching_min_ttl = 86400
 	}
-	default_ttl = 31536000
-	max_ttl = 31536000
-	min_ttl = 31536000
-	path_pattern = "assets/*"
-	target_origin_id = "website"
-	viewer_protocol_policy = "redirect-to-https"
-	compress = true
+
+  # Use default cloudfront SSL cert
+  viewer_certificate {
+    cloudfront_default_certificate = true
   }
 
-# Have to specify
   restrictions {
 	geo_restriction {
 	  restriction_type = "none"
 	}
   }
-
-	viewer_certificate {
-		acm_certificate_arn      = "${module.cert.arn}"
-		minimum_protocol_version = "TLSv1"
-		ssl_support_method       = "sni-only"
 	}
 
- 
-  # Do not want to cache 404's as it's a single page application
-	error_caching_min_ttl = 0
-	error_code = 404
+output "cloudfront_domain" {
+  value = "${aws_cloudfront_distribution.website_distribution.domain_name}"
   }
   
 

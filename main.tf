@@ -2,12 +2,6 @@ provider "aws" {
   profile    = "default"
   version    = "2.22.0"
   region     = "us-east-1"
-  alias  = "certificates"
-}
-
-provider "aws" {
-  region = "us-west-2"
-  alias  = "dns"
 }
 
 provider "archive" {
