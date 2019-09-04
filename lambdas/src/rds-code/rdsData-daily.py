@@ -22,13 +22,12 @@ def lambda_handler(event, context):
 
     num_writes = 0
     rows = []
-
-    for csv in directory:
-        obj = data_bucket.Object(csv.key)
-        if (obj.content_length > 136):
+    for dir in directory:
+        obj = data_bucket.Object(dir.key)
+        if (obj.content_length > 136 and not ((dir.key).endswith("00.csv"))):
             data = s3_client.select_object_content(
                 Bucket=bucket_name,
-                Key=csv.key,
+                Key=dir.key,
                 ExpressionType='SQL',
                 Expression='SELECT s.ISIN, s.SecurityDesc, s.StartPrice, s.EndPrice, s.TradedVolume, s."Date", s."Time" FROM s3object s',
                 InputSerialization={'CSV': {'FileHeaderInfo': 'Use'}},
@@ -41,7 +40,7 @@ def lambda_handler(event, context):
                     csvString = StringIO(records)
                     reader = csv.reader(csvString, delimiter=',')
                     for row in reader:
-                        if (len(row) == 7):
+                        if (len(row) == 7 and len(row[6]) == 5):
                             param = [
                                 {
                                     'name': 'ISIN',
@@ -82,7 +81,7 @@ def lambda_handler(event, context):
                                 {
                                     'name':'time',
                                     'value': {
-                                        'stringValue': row[6]+":00"
+                                        'stringValue': row[6]
                                     }
                                 }
                             ]

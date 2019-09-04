@@ -47,6 +47,7 @@ resource "aws_lambda_function" "rds-populate-lambda" {
     runtime         = "python3.6"
 
     timeout = 330
+    memory_size = 1536
 
     environment {
         variables = {
@@ -70,6 +71,7 @@ resource "aws_lambda_function" "rds-update-lambda" {
     runtime         = "python3.6"
 
     timeout = 330
+    memory_size = 960
 
     environment {
         variables = {

@@ -58,23 +58,32 @@ def lambda_handler(event, context):
             'body': json.dumps({"ERROR": "No name with that ISIN"})
         }
 
-    query = (
-        f'SELECT s.startPrice, s.date, s.time FROM stocks s WHERE s.ISIN=\'{ISIN}\' AND s.date >= \'{minDate}\' ORDER BY s.date')
+    getResults = True
+    offset = 0
 
-    response = rdsData.execute_statement(
-        database=database,
-        resourceArn=cluster_arn,
-        secretArn=secret_arn,
-        sql=query
-    )
+    while(getResults):
+        query = (
+            f'SELECT s.startPrice, s.date, s.time FROM stocks s WHERE s.ISIN=\'{ISIN}\' AND s.date >= \'{minDate}\' ORDER BY s.date LIMIT {offset}, 1000')
 
-    if ('records' in response and len(response['records']) > 0):
-        for record in response['records']:
-            data = {}
-            data['price'] = record[0]['doubleValue']
-            data['dateTime'] = f"{record[1]['stringValue']}T{record[2]['stringValue']}" 
-            reply['datapoints'].append(data)
-    else:
+        response = rdsData.execute_statement(
+            database=database,
+            resourceArn=cluster_arn,
+            secretArn=secret_arn,
+            sql=query
+        )
+
+        if ('records' in response and len(response['records']) > 0):
+            for record in response['records']:
+                data = {}
+                data['price'] = record[0]['doubleValue']
+                data['dateTime'] = f"{record[1]['stringValue']}T{record[2]['stringValue']}" 
+                reply['datapoints'].append(data)
+            offset += 1000
+
+        else:
+            getResults = False
+            
+    if (len(reply) == 0):
         return {
             'statusCode': 200,
             'headers': {
