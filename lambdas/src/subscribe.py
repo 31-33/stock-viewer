@@ -57,7 +57,7 @@ def lambda_handler(event, context):
         table.put_item(
                 Item={
                     'userId': cognito_username,
-                    'stocks': list(IDSN)
+                    'stocks': [IDSN]
                 }
             )
     #return the state of the stock now in the user db
