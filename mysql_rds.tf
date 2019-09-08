@@ -94,19 +94,19 @@ resource "aws_lambda_permission" "rds-update" {
 }
 
 
-# data "aws_lambda_invocation" "load-data" {
-#     depends_on = [
-#         "aws_lambda_function.rds-populate-lambda",
-#         "aws_rds_cluster.stock_rds_cluster"
-#     ]
+data "aws_lambda_invocation" "load-data" {
+    depends_on = [
+        "aws_lambda_function.rds-populate-lambda",
+        "aws_rds_cluster.stock_rds_cluster"
+    ]
 
-#     function_name = "${aws_lambda_function.rds-populate-lambda.function_name}"
-#     input = <<JSON
-# {
-#     "key1": "value1",
-#     "key2": "value2"
-# }
-# JSON
-# }
+    function_name = "${aws_lambda_function.rds-populate-lambda.function_name}"
+    input = <<JSON
+{
+    "key1": "value1",
+    "key2": "value2"
+}
+JSON
+}
 
 
